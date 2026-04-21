@@ -126,18 +126,24 @@ void nextStep() {
     int downedThisTurn = 0;
     for (auto& p : pins) if (p.down) downedThisTurn++;
 
-    // Логіка очок (Strike = 20, інакше по 1 за кеглю)
+    // Логіка очок за правилами професійного Strike
     if (currentAttempt == 1 && downedThisTurn == 10) {
-        totalScore += 20; // Strike!
+        int strikeBonus = (rand() % 10) + 1; // Рандомний бонус від 1 до 10
+        totalScore += (10 + strikeBonus);    // 10 базових за кеглі + бонус
+        
+        std::cout << "STRIKE! Bonus: +" << strikeBonus << std::endl;
+        
         currentRound++;
         resetPins();
-    } else if (currentAttempt == 2) {
+    } 
+    else if (currentAttempt == 2) {
         totalScore += downedThisTurn;
         currentRound++;
         currentAttempt = 1;
         resetPins();
-    } else {
-        currentAttempt = 2;
+    } 
+    else {
+        currentAttempt = 2; // Друга спроба у раунді
     }
 
     if (currentRound > TOTAL_ROUNDS) {
@@ -233,6 +239,7 @@ void mouseClick(int button, int state, int x, int y) {
 }
 
 int main(int argc, char** argv) {
+    srand(time(NULL));
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(1200, 700);
