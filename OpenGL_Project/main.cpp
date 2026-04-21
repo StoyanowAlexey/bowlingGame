@@ -22,10 +22,13 @@ bool isShooting = false;
 time_t startTime;
 float velX = 0.0f;
 float velZ = -15.0f;
+int firstThrowPins = 0;
+bool gameStarted = false;
 
 struct Pin {
     float x, z;
     bool down;
+    bool counted;
 };
 std::vector<Pin> pins;
 
@@ -35,7 +38,10 @@ void resetPins() {
     float spacingZ = 40.0f; // Ще ближче
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j <= i; j++) {
-            pins.push_back({ 450.0f + (j * spacingX) - (i * (spacingX / 2.0f)), -750.0f - (i * spacingZ), false });
+            pins.push_back({450.0f + (j * spacingX) - (i * (spacingX / 2.0f)),
+                            -750.0f - (i * spacingZ),
+                            false,
+                            false});
         }
     }
 }
@@ -54,6 +60,14 @@ void initGame() {
     currentAttempt = 1;
     totalScore = 0;
     isGameOver = false;
+
+    gameStarted = false;
+    ballX = 450.0f;
+    ballZ = 0.0f;
+    velX = 0.0f;
+    velZ = -15.0f;
+    isShooting = false;
+
     startTime = time(NULL);
     resetPins();
 }
@@ -72,10 +86,25 @@ void drawText(float x, float y, std::string text) {
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // 🔥 PROJECTION
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(60.0, 1200.0 / 700.0, 1.0, 3000.0);
+
+    // 🔥 MODELVIEW
+    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    gluPerspective(60.0, 1200.0/700.0, 1.0, 3000.0);
-    gluLookAt(450, 400, 600, 450, 0, -500, 0, 1, 0);
+    if (!gameStarted)
+    {
+        drawText(500, 350, "PRESS ANY KEY TO START");
+        glutSwapBuffers();
+        return;
+    }
+    static float camX = 450;
+    camX += (ballX - camX) * 0.05f;
+    gluLookAt(camX, 300, 400, ballX, 0, -800, 0, 1, 0);
 
     // Масштабування та Обертання
     glScalef(scale, scale, scale);
@@ -124,26 +153,39 @@ void display() {
 
 void nextStep() {
     int downedThisTurn = 0;
-    for (auto& p : pins) if (p.down) downedThisTurn++;
+    for (auto &p : pins)
+    {
+        if (p.down && !p.counted)
+        {
+            downedThisTurn++;
+            p.counted = true; // щоб вдруге не рахувалась
+        }
+    }
 
     // Логіка очок за правилами професійного Strike
-    if (currentAttempt == 1 && downedThisTurn == 10) {
-        int strikeBonus = (rand() % 10) + 1; // Рандомний бонус від 1 до 10
-        totalScore += (10 + strikeBonus);    // 10 базових за кеглі + бонус
-        
-        std::cout << "STRIKE! Bonus: +" << strikeBonus << std::endl;
-        
-        currentRound++;
-        resetPins();
-    } 
-    else if (currentAttempt == 2) {
-        totalScore += downedThisTurn;
+    if (currentAttempt == 1)
+    {
+        if (downedThisTurn == 10)
+        {
+            int strikeBonus = (rand() % 10) + 1;
+            totalScore += 10 + strikeBonus;
+
+            currentRound++;
+            resetPins();
+        }
+        else
+        {
+            firstThrowPins = downedThisTurn; // 🔥 запам’ятали
+            currentAttempt = 2;
+        }
+    }
+    else if (currentAttempt == 2)
+    {
+        totalScore += firstThrowPins + downedThisTurn; // 🔥 СУМА
+
         currentRound++;
         currentAttempt = 1;
         resetPins();
-    } 
-    else {
-        currentAttempt = 2; // Друга спроба у раунді
     }
 
     if (currentRound > TOTAL_ROUNDS) {
@@ -152,14 +194,34 @@ void nextStep() {
     }
     ballZ = 0;
     isShooting = false;
+    velX = 0;
+    velZ = -15.0f;
 }
 
 // ... (всі глобальні змінні залишаються ті самі)
 
 void timer(int v) {
+    if (!gameStarted)
+    {
+        glutPostRedisplay();
+        glutTimerFunc(16, timer, 0);
+        return;
+    }
     if (isShooting && !isGameOver) {
         ballX += velX;
         ballZ += velZ;
+
+        if (ballX < 200) ballX = 200;
+        if (ballX > 700) ballX = 700;
+
+        velZ *= 0.995f;
+        velX *= 0.99f;
+
+        // 🔥 ОЦЕ СТАВИ ТУТ (після тертя)
+        if (fabs(velZ) < 0.1f)
+            velZ = 0;
+        if (fabs(velX) < 0.05f)
+            velX = 0;
 
         for (int i = 0; i < pins.size(); i++) {
             if (!pins[i].down) {
@@ -208,8 +270,14 @@ void timer(int v) {
 }
 
 void keyboard(unsigned char key, int x, int y) {
+        if (!gameStarted)
+        {
+            gameStarted = true;
+            return;
+        }
     if (key == '+' || key == '=') scale += 0.1f;
     if (key == '-' || key == '_') scale -= 0.1f;
+    if (scale < 0.2f) scale = 0.2f;
     if (key == 'r' || key == 'R') initGame();
     if (key == 27) exit(0);
 }
@@ -223,10 +291,13 @@ void special(int key, int x, int y) {
 }
 
 void mousePassive(int x, int y) {
-    if (!isShooting) ballX = 200.0f + ((float)x / 1200.0f) * 500.0f;
+    if (!gameStarted) return;
+    if (!isShooting) 
+        ballX = 200.0f + ((float)x / 1200.0f) * 500.0f;
 }
 
 void mouseClick(int button, int state, int x, int y) {
+    if (isShooting) return;
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && !isShooting && !isGameOver)
 	{
 		isShooting = true;
