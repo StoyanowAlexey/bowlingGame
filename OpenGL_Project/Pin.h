@@ -1,35 +1,42 @@
-#pragma once
+#ifndef PIN_H
+#define PIN_H
+
 #include <GL/glut.h>
-#include "Ball.h"
 
 class Pin {
-public:
-    float x, y, z;
-    bool knocked;
+private:
+    float x, z;
+    bool down;
+    bool counted;
 
-    Pin(float px, float py, float pz) {
-        x = px; y = py; z = pz;
-        knocked = false;
-    }
+public:
+    Pin(float x, float z) : x(x), z(z), down(false), counted(false) {}
 
     void draw() {
-        if (knocked) return;
+        if (down) return;
 
-        GLUquadric* q = gluNewQuadric();
         glPushMatrix();
-        glTranslatef(x, y, z);
-        gluCylinder(q, 10, 10, 40, 20, 20);
+        glTranslatef(x, 20, z);
+        glColor3f(1, 1, 1);
+        glutSolidCone(10, 40, 10, 10);
         glPopMatrix();
     }
 
-    void checkHit(Ball& ball) {
-        if (knocked) return;
+    // 🔥 ГЕТТЕРИ
+    float getX() const { return x; }
+    float getZ() const { return z; }
+    bool isDown() const { return down; }
+    bool isCounted() const { return counted; }
 
-        float dx = ball.x - x;
-        float dz = ball.z - z;
+    // 🔥 ЛОГІКА
+    void knockDown() { down = true; }
 
-        if (dx*dx + dz*dz < 400) {
-            knocked = true;
-        }
+    void markCounted() { counted = true; }
+
+    void reset() {
+        down = false;
+        counted = false;
     }
 };
+
+#endif // PIN_H
