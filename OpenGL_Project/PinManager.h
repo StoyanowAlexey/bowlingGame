@@ -47,8 +47,7 @@ public:
                 downed++;
 
                 float nx = dx / dist;
-
-                // 🔥 використовуємо методи кулі
+                
                 float newVelX = ball.getVelX() * 0.85f - nx * 2.0f;
                 float newVelZ = ball.getVelZ() * 0.98f;
 

@@ -73,14 +73,13 @@ public:
         ball.draw();
     }
 
-    // 🔥 ГЕТТЕРИ (контроль доступу)
     int getScore() const { return totalScore; }
     int getRound() const { return round; }
     int getAttempt() const { return attempt; }
     bool isGameOver() const { return gameOver; }
     bool isStarted() const { return started; }
 
-    Ball& getBall() { return ball; } // контрольований доступ
+    Ball& getBall() { return ball; } 
 };
 
 #endif

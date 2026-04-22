@@ -22,13 +22,12 @@ public:
         glPopMatrix();
     }
 
-    // 🔥 ГЕТТЕРИ
+
     float getX() const { return x; }
     float getZ() const { return z; }
     bool isDown() const { return down; }
     bool isCounted() const { return counted; }
 
-    // 🔥 ЛОГІКА
     void knockDown() { down = true; }
 
     void markCounted() { counted = true; }

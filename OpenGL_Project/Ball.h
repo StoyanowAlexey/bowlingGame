@@ -54,13 +54,13 @@ public:
         shooting = false;
     }
 
-    // 🔥 ГЕТТЕРИ
+
     float getX() const { return x; }
     float getZ() const { return z; }
 
-    // 🔥 СЕТТЕР (контрольований)
+   
     void setX(float newX) {
-        if (!shooting) // щоб не рухати кулю під час кидка
+        if (!shooting)
             x = newX;
     }
 

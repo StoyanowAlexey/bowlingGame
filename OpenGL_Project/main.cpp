@@ -5,10 +5,8 @@
 
 #include "Game.h"
 
-// глобальний об'єкт гри
 Game game;
 
-// локальні (це нормально залишити тут)
 float scale = 1.0f;
 float rotateX = 20.0f;
 float rotateY = 0.0f;
@@ -54,7 +52,6 @@ void display() {
         return;
     }
 
-    // камера
     static float camX = 450;
     camX += (game.getBall().getX() - camX) * 0.05f;
 
@@ -76,7 +73,6 @@ void display() {
         glVertex3f(200, 0, -1200);
     glEnd();
 
-    // 🔥 тепер усе малює Game
     game.draw();
 
     // HUD
