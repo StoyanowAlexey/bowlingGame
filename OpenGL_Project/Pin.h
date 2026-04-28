@@ -2,8 +2,9 @@
 #define PIN_H
 
 #include <GL/glut.h>
+#include "GameObject.h"
 
-class Pin {
+class Pin : public GameObject {
 private:
     float x, z;
     bool down;
@@ -12,7 +13,7 @@ private:
 public:
     Pin(float x, float z) : x(x), z(z), down(false), counted(false) {}
 
-    void draw() {
+    void draw() override {
         if (down) return;
 
         glPushMatrix();

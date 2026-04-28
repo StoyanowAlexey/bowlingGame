@@ -3,8 +3,9 @@
 
 #include <GL/glut.h>
 #include <cmath>
+#include "GameObject.h"
 
-class Ball {
+class Ball : public GameObject {
 private:
     float x;
     float z;
@@ -30,7 +31,7 @@ public:
         if (fabs(velX) < 0.05f) velX = 0;
     }
 
-    void draw() {
+    void draw() override {
         glPushMatrix();
         glTranslatef(x, 20, z);
         glColor3f(0.1f, 0.6f, 0.1f);
@@ -64,10 +65,8 @@ public:
             x = newX;
     }
 
-    // 🔥 СТАН
     bool isShooting() const { return shooting; }
 
-    // 🔥 доступ до швидкості (якщо треба для фізики)
     float getVelX() const { return velX; }
     float getVelZ() const { return velZ; }
 

@@ -59,7 +59,7 @@ void display() {
               game.getBall().getX(), 0, -800,
               0, 1, 0);
 
-    // трансформації
+    // TRANSFORMATIONS
     glScalef(scale, scale, scale);
     glRotatef(rotateX, 1, 0, 0);
     glRotatef(rotateY, 0, 1, 0);
@@ -152,7 +152,6 @@ void mouseClick(int button, int state, int x, int y) {
     }
 }
 
-// --- MAIN ---
 int main(int argc, char** argv) {
     srand(time(NULL));
 
